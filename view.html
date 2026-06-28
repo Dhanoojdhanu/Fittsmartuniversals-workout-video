@@ -125,9 +125,10 @@
                             <p class="subtitle">This link will expire 24 hours after it was generated.</p>
                             
                             <style>
+                                /* We subtract exactly 60px from the 16:9 ratio to account for the cropped top */
                                 .video-wrapper {
                                     position: relative;
-                                    padding-bottom: 56.25%; /* Perfect 16:9 ratio */
+                                    padding-bottom: calc(56.25% - 60px); 
                                     height: 0;
                                     overflow: hidden;
                                     border-radius: 12px;
@@ -135,27 +136,26 @@
                                     background: #000;
                                 }
                                 
-                                /* Precision Letterbox Trick: 
-                                   Increase height by exactly 70px. YouTube adds 35px black bars to top & bottom. 
-                                   Shift up by 70px. This hides the 35px top black bar AND the top 35px of the video.
-                                   The Top Bar (Share/Title) is hidden completely. 
-                                   The Bottom Bar (Native Controls) stays perfectly visible at the bottom! */
+                                /* We add the 60px back to the iframe height. 
+                                   This ensures the iframe is EXACTLY 16:9, so YouTube adds no black bars.
+                                   By shifting it up 60px, the top Share/Title bar is perfectly hidden,
+                                   and the bottom Control Bar aligns perfectly with the bottom of the wrapper! */
                                 .video-wrapper iframe {
                                     position: absolute;
-                                    top: -70px;
+                                    top: -60px;
                                     left: 0;
                                     width: 100%;
-                                    height: calc(100% + 70px);
+                                    height: calc(100% + 60px);
                                     border: none;
                                 }
 
                                 /* Invisible shield to block clicking the YouTube watermark on the right side */
                                 .watermark-shield {
                                     position: absolute;
-                                    bottom: 50px; /* Just above the native control bar */
+                                    bottom: 45px; /* Just above the native control bar */
                                     right: 0;
-                                    width: 150px;
-                                    height: 60px;
+                                    width: 120px;
+                                    height: 50px;
                                     z-index: 10;
                                     background: transparent;
                                 }
@@ -165,7 +165,7 @@
                                 <div class="watermark-shield"></div>
                                 <iframe 
                                     src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=0" 
-                                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                                     allowfullscreen>
                                 </iframe>
                             </div>
