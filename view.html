@@ -125,10 +125,9 @@
                             <p class="subtitle">This link will expire 24 hours after it was generated.</p>
                             
                             <style>
-                                /* We subtract exactly 60px from the 16:9 ratio to account for the cropped top */
                                 .video-wrapper {
                                     position: relative;
-                                    padding-bottom: calc(56.25% - 60px); 
+                                    padding-bottom: 56.25%; /* Perfect 16:9 ratio */
                                     height: 0;
                                     overflow: hidden;
                                     border-radius: 12px;
@@ -136,23 +135,25 @@
                                     background: #000;
                                 }
                                 
-                                /* We add the 60px back to the iframe height. 
-                                   This ensures the iframe is EXACTLY 16:9, so YouTube adds no black bars.
-                                   By shifting it up 60px, the top Share/Title bar is perfectly hidden,
-                                   and the bottom Control Bar aligns perfectly with the bottom of the wrapper! */
+                                /* Bulletproof shift: 
+                                   We keep the iframe exactly 100% height (perfect 16:9, no black bars from YouTube).
+                                   We shift it UP by exactly 60px.
+                                   This hides the top 60px (Share button/Title).
+                                   The bottom of the iframe sits 60px above the bottom of the wrapper, leaving a clean black bar.
+                                   The native YouTube controls are perfectly visible and functional! */
                                 .video-wrapper iframe {
                                     position: absolute;
                                     top: -60px;
                                     left: 0;
                                     width: 100%;
-                                    height: calc(100% + 60px);
+                                    height: 100%;
                                     border: none;
                                 }
 
                                 /* Invisible shield to block clicking the YouTube watermark on the right side */
                                 .watermark-shield {
                                     position: absolute;
-                                    bottom: 45px; /* Just above the native control bar */
+                                    bottom: 70px; /* Just above the native control bar */
                                     right: 0;
                                     width: 120px;
                                     height: 50px;
