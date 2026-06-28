@@ -91,12 +91,57 @@
                     contentDiv.innerHTML = `
                         <h2>Your Customized Workout Routine</h2>
                         <p>This link will expire 24 hours after it was generated.</p>
+                        
+                        <style>
+                            /* Advanced trick to hide YouTube Share/Title and Logo without cropping the video itself */
+                            .video-wrapper {
+                                position: relative;
+                                padding-bottom: 56.25%; /* Perfect 16:9 ratio */
+                                height: 0;
+                                overflow: hidden;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                                background: #000;
+                                /* Add an invisible shield over the top and bottom to prevent stray clicks */
+                            }
+                            
+                            /* We make the iframe taller than the container to force YouTube to add black bars. 
+                               The Share button goes on the top black bar, which we then shift out of view! */
+                            .video-wrapper iframe {
+                                position: absolute;
+                                top: -15%; /* Shift up to hide top UI */
+                                left: 0;
+                                width: 100%;
+                                height: 130%; /* Increase height to push UI into black bars */
+                                border: none;
+                            }
+                            
+                            /* Invisible shields block hovering over the hidden UI areas */
+                            .shield-top, .shield-bottom {
+                                position: absolute;
+                                left: 0;
+                                width: 100%;
+                                z-index: 10;
+                                background: transparent;
+                            }
+                            .shield-top {
+                                top: 0;
+                                height: 15%;
+                            }
+                            .shield-bottom {
+                                bottom: 0;
+                                height: 15%;
+                            }
+                        </style>
+
                         <div class="video-wrapper">
+                            <div class="shield-top"></div>
                             <iframe 
-                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
+                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&controls=0&disablekb=1" 
                                 sandbox="allow-scripts allow-same-origin allow-presentation"
                                 allowfullscreen>
                             </iframe>
+                            <div class="shield-bottom"></div>
                         </div>`;
                 }
 
