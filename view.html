@@ -92,7 +92,11 @@
                         <h2>Your Customized Workout Routine</h2>
                         <p>This link will expire 24 hours after it was generated.</p>
                         <div class="video-wrapper">
-                            <iframe src="https://www.youtube.com/embed/${videoId}?rel=0" allowfullscreen></iframe>
+                            <iframe 
+                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
+                                sandbox="allow-scripts allow-same-origin allow-presentation"
+                                allowfullscreen>
+                            </iframe>
                         </div>`;
                 }
 
