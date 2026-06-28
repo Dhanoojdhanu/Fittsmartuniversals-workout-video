@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Workout Routine</title>
+    <!-- Include Plyr CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,6 +25,7 @@
             max-width: 800px;
         }
 
+        /* 16:9 Aspect Ratio Container */
         .video-wrapper {
             position: relative;
             padding-bottom: 56.25%;
@@ -30,15 +33,25 @@
             overflow: hidden;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            background: #000;
         }
 
-        .video-wrapper iframe {
-            position: absolute;
+        /* Force Plyr to fill the container */
+        .plyr--video {
+            position: absolute !important;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: none;
+        }
+
+        /* CROP HACK: Make the YouTube iframe taller and shift it up.
+           This pushes the YouTube title/share bar and the YouTube bottom controls 
+           outside of the visible area, perfectly hiding them without cropping the video itself. */
+        .plyr__video-wrapper iframe {
+            top: -60px !important;
+            height: calc(100% + 120px) !important;
+            pointer-events: none !important; /* Ensure iframe is unclickable */
         }
 
         .error-card {
@@ -51,16 +64,6 @@
         h1 {
             color: #ff4444;
         }
-
-        .top-blocker {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 80px;
-            z-index: 10;
-            background: transparent;
-        }
     </style>
 </head>
 
@@ -69,6 +72,8 @@
     <div class="container" id="content">
     </div>
 
+    <!-- Include Plyr JS -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -82,13 +87,11 @@
             contentDiv.innerHTML = `<div class="error-card"><h1>Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
         } else {
             try {
-                // Decode the data back from Base64
                 const data = JSON.parse(atob(token));
                 const videoId = data.id;
                 const expirationTime = data.exp;
                 const currentTime = Date.now();
 
-                // Check if current time has passed the expiration time
                 if (currentTime > expirationTime) {
                     contentDiv.innerHTML = `
                         <div class="error-card">
@@ -97,20 +100,28 @@
                             <p>Please contact your trainer if you need an extension.</p>
                         </div>`;
                 } else {
-                    // Link is valid, load the video embed
+                    // Render the video player container for Plyr
                     contentDiv.innerHTML = `
                         <h2>Your Customized Workout Routine</h2>
                         <p>This link will expire 24 hours after it was generated.</p>
                         <div class="video-wrapper">
-                            <div class="top-blocker"></div>
-                            <iframe 
-                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
-                                sandbox="allow-scripts allow-same-origin allow-presentation"
-                                allowfullscreen>
-                            </iframe>
+                            <div class="plyr__video-embed" id="player">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/${videoId}?origin=${window.location.origin}&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;rel=0&amp;enablejsapi=1" 
+                                    allowfullscreen 
+                                    allowtransparency 
+                                    allow="autoplay">
+                                </iframe>
+                            </div>
                         </div>`;
+                        
+                    // Initialize Plyr custom video player
+                    setTimeout(() => {
+                        const player = new Plyr('#player', {
+                            youtube: { noCookie: false, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 }
+                        });
+                    }, 50);
                 }
-
             } catch (e) {
                 contentDiv.innerHTML = `<div class="error-card"><h1>Error</h1><p>Unable to process this link.</p></div>`;
             }
