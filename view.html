@@ -109,10 +109,10 @@
                                The Share button goes on the top black bar, which we then shift out of view! */
                             .video-wrapper iframe {
                                 position: absolute;
-                                top: -15%; /* Shift up to hide top UI */
+                                top: -70px; /* Shift up by exactly 70px to hide top UI regardless of screen size */
                                 left: 0;
                                 width: 100%;
-                                height: 130%; /* Increase height to push UI into black bars */
+                                height: calc(100% + 140px); /* Increase height by 140px (70px top + 70px bottom) */
                                 border: none;
                             }
                             
@@ -126,11 +126,11 @@
                             }
                             .shield-top {
                                 top: 0;
-                                height: 15%;
+                                height: 70px;
                             }
                             .shield-bottom {
                                 bottom: 0;
-                                height: 15%;
+                                height: 70px;
                             }
 
                             /* Fullscreen Button Styles */
@@ -162,6 +162,18 @@
                                 padding-bottom: 0 !important;
                                 height: 100vh !important;
                             }
+
+                            /* Mobile iOS Fake Fullscreen Fallback */
+                            .fake-fullscreen {
+                                position: fixed !important;
+                                top: 0 !important;
+                                left: 0 !important;
+                                width: 100vw !important;
+                                height: 100vh !important;
+                                padding-bottom: 0 !important;
+                                z-index: 9999 !important;
+                                border-radius: 0 !important;
+                            }
                         </style>
 
                         <div class="video-wrapper" id="vid-wrap">
@@ -183,26 +195,38 @@
 
         window.toggleFullScreen = function() {
             const wrapper = document.getElementById('vid-wrap');
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (wrapper.requestFullscreen) {
-                    wrapper.requestFullscreen();
-                } else if (wrapper.webkitRequestFullscreen) { /* Safari */
-                    wrapper.webkitRequestFullscreen();
+            const supportsNativeFS = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+
+            if (supportsNativeFS) {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    if (wrapper.requestFullscreen) {
+                        wrapper.requestFullscreen();
+                    } else if (wrapper.webkitRequestFullscreen) { /* Safari */
+                        wrapper.webkitRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) { /* Safari */
+                        document.webkitExitFullscreen();
+                    }
                 }
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) { /* Safari */
-                    document.webkitExitFullscreen();
-                }
+                // Fallback for iOS devices that block native fullscreen API
+                wrapper.classList.toggle('fake-fullscreen');
+                updateFullscreenButton();
             }
         };
 
         // Automatically update the button text when fullscreen state changes (e.g., if user presses ESC)
         function updateFullscreenButton() {
             const btn = document.getElementById('fs-btn');
+            const wrapper = document.getElementById('vid-wrap');
             if (btn) {
-                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                const isNativeFS = document.fullscreenElement || document.webkitFullscreenElement;
+                const isFakeFS = wrapper && wrapper.classList.contains('fake-fullscreen');
+                
+                if (isNativeFS || isFakeFS) {
                     btn.innerText = 'Exit Full Screen';
                 } else {
                     btn.innerText = '[ ] Full Screen';
