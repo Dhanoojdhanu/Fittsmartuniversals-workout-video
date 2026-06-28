@@ -118,7 +118,6 @@
                             <p>This workout video was valid for 24 hours and has now expired.</p>
                             <p>Please contact your trainer if you need an extension.</p>
                         </div>`;
-                } else {
                     // Link is valid, load the video embed
                     contentDiv.innerHTML = `
                         <div class="premium-card">
@@ -126,7 +125,6 @@
                             <p class="subtitle">This link will expire 24 hours after it was generated.</p>
                             
                             <style>
-                                /* Advanced trick to hide YouTube Share/Title and Logo without cropping the video itself */
                                 .video-wrapper {
                                     position: relative;
                                     padding-bottom: 56.25%; /* Perfect 16:9 ratio */
@@ -135,90 +133,41 @@
                                     border-radius: 12px;
                                     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
                                     background: #000;
-                                    /* Add an invisible shield over the top and bottom to prevent stray clicks */
                                 }
                                 
-                                /* We make the iframe taller than the container to force YouTube to add black bars. 
-                                   The Share button goes on the top black bar, which we then shift out of view! */
+                                /* Precision Letterbox Trick: 
+                                   Increase height by exactly 70px. YouTube adds 35px black bars to top & bottom. 
+                                   Shift up by 70px. This hides the 35px top black bar AND the top 35px of the video.
+                                   The Top Bar (Share/Title) is hidden completely. 
+                                   The Bottom Bar (Native Controls) stays perfectly visible at the bottom! */
                                 .video-wrapper iframe {
                                     position: absolute;
-                                    top: -70px; /* Shift up by exactly 70px to hide top UI regardless of screen size */
+                                    top: -70px;
                                     left: 0;
                                     width: 100%;
-                                    height: calc(100% + 140px); /* Increase height by 140px (70px top + 70px bottom) */
+                                    height: calc(100% + 70px);
                                     border: none;
                                 }
-                                
-                                /* Invisible shields block hovering over the hidden UI areas */
-                                .shield-top, .shield-bottom {
+
+                                /* Invisible shield to block clicking the YouTube watermark on the right side */
+                                .watermark-shield {
                                     position: absolute;
-                                    left: 0;
-                                    width: 100%;
+                                    bottom: 50px; /* Just above the native control bar */
+                                    right: 0;
+                                    width: 150px;
+                                    height: 60px;
                                     z-index: 10;
                                     background: transparent;
                                 }
-                                .shield-top { top: 0; height: 70px; }
-                                .shield-bottom { bottom: 0; height: 70px; }
-
-                                /* Fullscreen Button Styles */
-                                .fullscreen-btn {
-                                    position: absolute;
-                                    bottom: 15px;
-                                    right: 15px;
-                                    z-index: 20;
-                                    background: rgba(15,23,42,0.8);
-                                    backdrop-filter: blur(4px);
-                                    color: white;
-                                    border: 1px solid rgba(255,255,255,0.2);
-                                    border-radius: 8px;
-                                    padding: 10px 15px;
-                                    font-size: 13px;
-                                    font-weight: 600;
-                                    font-family: inherit;
-                                    cursor: pointer;
-                                    transition: all 0.3s ease;
-                                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-                                }
-                                .fullscreen-btn:hover { background: rgba(99,102,241,0.9); transform: translateY(-2px); }
-                                
-                                /* Adjust wrapper when in fullscreen */
-                                .video-wrapper:fullscreen { padding-bottom: 0 !important; height: 100vh !important; border-radius: 0; }
-                                .video-wrapper:-webkit-full-screen { padding-bottom: 0 !important; height: 100vh !important; border-radius: 0; }
-
-                                /* Mobile iOS Fake Fullscreen Fallback */
-                                .fake-fullscreen {
-                                    position: fixed !important;
-                                    top: 0 !important;
-                                    left: 0 !important;
-                                    width: 100vw !important;
-                                    height: 100vh !important;
-                                    padding-bottom: 0 !important;
-                                    z-index: 9999 !important;
-                                    border-radius: 0 !important;
-                                }
-
-                                /* Force landscape via rotation if phone is held in portrait mode */
-                                @media screen and (orientation: portrait) {
-                                    .fake-fullscreen {
-                                        width: 100vh !important;
-                                        height: 100vw !important;
-                                        transform: rotate(90deg);
-                                        transform-origin: top left;
-                                        top: 0 !important;
-                                        left: 100vw !important;
-                                    }
-                                }
                             </style>
 
-                            <div class="video-wrapper" id="vid-wrap">
-                                <div class="shield-top"></div>
+                            <div class="video-wrapper">
+                                <div class="watermark-shield"></div>
                                 <iframe 
-                                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&controls=0&disablekb=1" 
+                                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=0" 
                                     sandbox="allow-scripts allow-same-origin allow-presentation"
                                     allowfullscreen>
                                 </iframe>
-                                <div class="shield-bottom"></div>
-                                <button id="fs-btn" class="fullscreen-btn" onclick="toggleFullScreen()">Full Screen</button>
                             </div>
                         </div>`;
                 }
@@ -227,50 +176,6 @@
                 contentDiv.innerHTML = `<div class="error-card"><h1 class="error-title">Error</h1><p>Unable to process this link.</p></div>`;
             }
         }
-
-        window.toggleFullScreen = function() {
-            const wrapper = document.getElementById('vid-wrap');
-            const supportsNativeFS = document.fullscreenEnabled || document.webkitFullscreenEnabled;
-
-            if (supportsNativeFS) {
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    if (wrapper.requestFullscreen) {
-                        wrapper.requestFullscreen();
-                    } else if (wrapper.webkitRequestFullscreen) { /* Safari */
-                        wrapper.webkitRequestFullscreen();
-                    }
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) { /* Safari */
-                        document.webkitExitFullscreen();
-                    }
-                }
-            } else {
-                // Fallback for iOS devices that block native fullscreen API
-                wrapper.classList.toggle('fake-fullscreen');
-                updateFullscreenButton();
-            }
-        };
-
-        // Automatically update the button text when fullscreen state changes (e.g., if user presses ESC)
-        function updateFullscreenButton() {
-            const btn = document.getElementById('fs-btn');
-            const wrapper = document.getElementById('vid-wrap');
-            if (btn) {
-                const isNativeFS = document.fullscreenElement || document.webkitFullscreenElement;
-                const isFakeFS = wrapper && wrapper.classList.contains('fake-fullscreen');
-                
-                if (isNativeFS || isFakeFS) {
-                    btn.innerText = 'Exit Full Screen';
-                } else {
-                    btn.innerText = '[ ] Full Screen';
-                }
-            }
-        }
-        
-        document.addEventListener('fullscreenchange', updateFullscreenButton);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
     </script>
 </body>
 
