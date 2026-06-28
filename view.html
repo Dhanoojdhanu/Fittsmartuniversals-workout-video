@@ -132,9 +132,39 @@
                                 bottom: 0;
                                 height: 15%;
                             }
+
+                            /* Fullscreen Button Styles */
+                            .fullscreen-btn {
+                                position: absolute;
+                                bottom: 15px;
+                                right: 15px;
+                                z-index: 20;
+                                background: rgba(0,0,0,0.6);
+                                color: white;
+                                border: 1px solid rgba(255,255,255,0.3);
+                                border-radius: 4px;
+                                padding: 8px 12px;
+                                font-size: 12px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                transition: background 0.2s;
+                            }
+                            .fullscreen-btn:hover {
+                                background: rgba(0,0,0,0.9);
+                            }
+                            
+                            /* Adjust wrapper when in fullscreen */
+                            .video-wrapper:fullscreen {
+                                padding-bottom: 0 !important;
+                                height: 100vh !important;
+                            }
+                            .video-wrapper:-webkit-full-screen {
+                                padding-bottom: 0 !important;
+                                height: 100vh !important;
+                            }
                         </style>
 
-                        <div class="video-wrapper">
+                        <div class="video-wrapper" id="vid-wrap">
                             <div class="shield-top"></div>
                             <iframe 
                                 src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&controls=0&disablekb=1" 
@@ -142,6 +172,7 @@
                                 allowfullscreen>
                             </iframe>
                             <div class="shield-bottom"></div>
+                            <button class="fullscreen-btn" onclick="toggleFullScreen()">[ ] Full Screen</button>
                         </div>`;
                 }
 
@@ -149,6 +180,23 @@
                 contentDiv.innerHTML = `<div class="error-card"><h1>Error</h1><p>Unable to process this link.</p></div>`;
             }
         }
+
+        window.toggleFullScreen = function() {
+            const wrapper = document.getElementById('vid-wrap');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (wrapper.requestFullscreen) {
+                    wrapper.requestFullscreen();
+                } else if (wrapper.webkitRequestFullscreen) { /* Safari */
+                    wrapper.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                }
+            }
+        };
     </script>
 </body>
 
