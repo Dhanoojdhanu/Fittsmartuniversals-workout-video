@@ -1,60 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Workout Routine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             text-align: center;
+            overflow-x: hidden;
+        }
+
+        /* Background Glows */
+        .bg-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0) 70%);
+            top: -150px;
+            left: -150px;
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .bg-glow.right {
+            top: auto;
+            bottom: -200px;
+            left: auto;
+            right: -150px;
+            background: radial-gradient(circle, rgba(236,72,153,0.15) 0%, rgba(0,0,0,0) 70%);
         }
 
         .container {
             width: 90%;
             max-width: 800px;
+            z-index: 10;
         }
 
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        .premium-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-out forwards;
         }
 
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { 
+            margin-top: 0; 
+            font-size: 28px; 
+            font-weight: 600; 
+            background: linear-gradient(to right, #818cf8, #f472b6); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
         }
+        
+        .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 25px; }
 
         .error-card {
-            background: #222;
+            background: rgba(239, 68, 68, 0.1);
             padding: 40px;
-            border-radius: 10px;
-            border: 2px solid #ff4444;
+            border-radius: 20px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            backdrop-filter: blur(12px);
+            animation: fadeIn 0.4s ease-out forwards;
         }
 
-        h1 {
-            color: #ff4444;
-        }
+        h1.error-title { color: #f87171; margin-top: 0; font-size: 24px; }
+        .error-card p { color: #f8fafc; }
     </style>
 </head>
 
 <body>
+    <div class="bg-glow"></div>
+    <div class="bg-glow right"></div>
 
     <div class="container" id="content">
     </div>
@@ -69,7 +101,7 @@
         const contentDiv = document.getElementById('content');
 
         if (!token) {
-            contentDiv.innerHTML = `<div class="error-card"><h1>Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
+            contentDiv.innerHTML = `<div class="error-card"><h1 class="error-title">Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
         } else {
             try {
                 // Decode the data back from Base64
@@ -82,114 +114,117 @@
                 if (currentTime > expirationTime) {
                     contentDiv.innerHTML = `
                         <div class="error-card">
-                            <h1>Link Expired</h1>
+                            <h1 class="error-title">Link Expired</h1>
                             <p>This workout video was valid for 24 hours and has now expired.</p>
                             <p>Please contact your trainer if you need an extension.</p>
                         </div>`;
                 } else {
                     // Link is valid, load the video embed
                     contentDiv.innerHTML = `
-                        <h2>Your Customized Workout Routine</h2>
-                        <p>This link will expire 24 hours after it was generated.</p>
-                        
-                        <style>
-                            /* Advanced trick to hide YouTube Share/Title and Logo without cropping the video itself */
-                            .video-wrapper {
-                                position: relative;
-                                padding-bottom: 56.25%; /* Perfect 16:9 ratio */
-                                height: 0;
-                                overflow: hidden;
-                                border-radius: 8px;
-                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-                                background: #000;
-                                /* Add an invisible shield over the top and bottom to prevent stray clicks */
-                            }
+                        <div class="premium-card">
+                            <h2>Your Customized Workout Routine</h2>
+                            <p class="subtitle">This link will expire 24 hours after it was generated.</p>
                             
-                            /* We make the iframe taller than the container to force YouTube to add black bars. 
-                               The Share button goes on the top black bar, which we then shift out of view! */
-                            .video-wrapper iframe {
-                                position: absolute;
-                                top: -70px; /* Shift up by exactly 70px to hide top UI regardless of screen size */
-                                left: 0;
-                                width: 100%;
-                                height: calc(100% + 140px); /* Increase height by 140px (70px top + 70px bottom) */
-                                border: none;
-                            }
-                            
-                            /* Invisible shields block hovering over the hidden UI areas */
-                            .shield-top, .shield-bottom {
-                                position: absolute;
-                                left: 0;
-                                width: 100%;
-                                z-index: 10;
-                                background: transparent;
-                            }
-                            .shield-top {
-                                top: 0;
-                                height: 70px;
-                            }
-                            .shield-bottom {
-                                bottom: 0;
-                                height: 70px;
-                            }
+                            <style>
+                                /* Advanced trick to hide YouTube Share/Title and Logo without cropping the video itself */
+                                .video-wrapper {
+                                    position: relative;
+                                    padding-bottom: 56.25%; /* Perfect 16:9 ratio */
+                                    height: 0;
+                                    overflow: hidden;
+                                    border-radius: 12px;
+                                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                                    background: #000;
+                                    /* Add an invisible shield over the top and bottom to prevent stray clicks */
+                                }
+                                
+                                /* We make the iframe taller than the container to force YouTube to add black bars. 
+                                   The Share button goes on the top black bar, which we then shift out of view! */
+                                .video-wrapper iframe {
+                                    position: absolute;
+                                    top: -70px; /* Shift up by exactly 70px to hide top UI regardless of screen size */
+                                    left: 0;
+                                    width: 100%;
+                                    height: calc(100% + 140px); /* Increase height by 140px (70px top + 70px bottom) */
+                                    border: none;
+                                }
+                                
+                                /* Invisible shields block hovering over the hidden UI areas */
+                                .shield-top, .shield-bottom {
+                                    position: absolute;
+                                    left: 0;
+                                    width: 100%;
+                                    z-index: 10;
+                                    background: transparent;
+                                }
+                                .shield-top { top: 0; height: 70px; }
+                                .shield-bottom { bottom: 0; height: 70px; }
 
-                            /* Fullscreen Button Styles */
-                            .fullscreen-btn {
-                                position: absolute;
-                                bottom: 15px;
-                                right: 15px;
-                                z-index: 20;
-                                background: rgba(0,0,0,0.6);
-                                color: white;
-                                border: 1px solid rgba(255,255,255,0.3);
-                                border-radius: 4px;
-                                padding: 8px 12px;
-                                font-size: 12px;
-                                font-weight: bold;
-                                cursor: pointer;
-                                transition: background 0.2s;
-                            }
-                            .fullscreen-btn:hover {
-                                background: rgba(0,0,0,0.9);
-                            }
-                            
-                            /* Adjust wrapper when in fullscreen */
-                            .video-wrapper:fullscreen {
-                                padding-bottom: 0 !important;
-                                height: 100vh !important;
-                            }
-                            .video-wrapper:-webkit-full-screen {
-                                padding-bottom: 0 !important;
-                                height: 100vh !important;
-                            }
+                                /* Fullscreen Button Styles */
+                                .fullscreen-btn {
+                                    position: absolute;
+                                    bottom: 15px;
+                                    right: 15px;
+                                    z-index: 20;
+                                    background: rgba(15,23,42,0.8);
+                                    backdrop-filter: blur(4px);
+                                    color: white;
+                                    border: 1px solid rgba(255,255,255,0.2);
+                                    border-radius: 8px;
+                                    padding: 10px 15px;
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    font-family: inherit;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                                }
+                                .fullscreen-btn:hover { background: rgba(99,102,241,0.9); transform: translateY(-2px); }
+                                
+                                /* Adjust wrapper when in fullscreen */
+                                .video-wrapper:fullscreen { padding-bottom: 0 !important; height: 100vh !important; border-radius: 0; }
+                                .video-wrapper:-webkit-full-screen { padding-bottom: 0 !important; height: 100vh !important; border-radius: 0; }
 
-                            /* Mobile iOS Fake Fullscreen Fallback */
-                            .fake-fullscreen {
-                                position: fixed !important;
-                                top: 0 !important;
-                                left: 0 !important;
-                                width: 100vw !important;
-                                height: 100vh !important;
-                                padding-bottom: 0 !important;
-                                z-index: 9999 !important;
-                                border-radius: 0 !important;
-                            }
-                        </style>
+                                /* Mobile iOS Fake Fullscreen Fallback */
+                                .fake-fullscreen {
+                                    position: fixed !important;
+                                    top: 0 !important;
+                                    left: 0 !important;
+                                    width: 100vw !important;
+                                    height: 100vh !important;
+                                    padding-bottom: 0 !important;
+                                    z-index: 9999 !important;
+                                    border-radius: 0 !important;
+                                }
 
-                        <div class="video-wrapper" id="vid-wrap">
-                            <div class="shield-top"></div>
-                            <iframe 
-                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&controls=0&disablekb=1" 
-                                sandbox="allow-scripts allow-same-origin allow-presentation"
-                                allowfullscreen>
-                            </iframe>
-                            <div class="shield-bottom"></div>
-                            <button id="fs-btn" class="fullscreen-btn" onclick="toggleFullScreen()">[ ] Full Screen</button>
+                                /* Force landscape via rotation if phone is held in portrait mode */
+                                @media screen and (orientation: portrait) {
+                                    .fake-fullscreen {
+                                        width: 100vh !important;
+                                        height: 100vw !important;
+                                        transform: rotate(90deg);
+                                        transform-origin: top left;
+                                        top: 0 !important;
+                                        left: 100vw !important;
+                                    }
+                                }
+                            </style>
+
+                            <div class="video-wrapper" id="vid-wrap">
+                                <div class="shield-top"></div>
+                                <iframe 
+                                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&controls=0&disablekb=1" 
+                                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                                    allowfullscreen>
+                                </iframe>
+                                <div class="shield-bottom"></div>
+                                <button id="fs-btn" class="fullscreen-btn" onclick="toggleFullScreen()">Full Screen</button>
+                            </div>
                         </div>`;
                 }
 
             } catch (e) {
-                contentDiv.innerHTML = `<div class="error-card"><h1>Error</h1><p>Unable to process this link.</p></div>`;
+                contentDiv.innerHTML = `<div class="error-card"><h1 class="error-title">Error</h1><p>Unable to process this link.</p></div>`;
             }
         }
 
