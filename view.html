@@ -1,92 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Workout Routine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
         body {
-            font-family: 'Outfit', sans-serif;
-            background: #0f172a;
-            color: #f8fafc;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             text-align: center;
-            overflow-x: hidden;
-        }
-
-        /* Background Glows */
-        .bg-glow {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0) 70%);
-            top: -150px;
-            left: -150px;
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .bg-glow.right {
-            top: auto;
-            bottom: -200px;
-            left: auto;
-            right: -150px;
-            background: radial-gradient(circle, rgba(236,72,153,0.15) 0%, rgba(0,0,0,0) 70%);
         }
 
         .container {
             width: 90%;
             max-width: 800px;
-            z-index: 10;
         }
 
-        .premium-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.5s ease-out forwards;
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        h2 { 
-            margin-top: 0; 
-            font-size: 28px; 
-            font-weight: 600; 
-            background: linear-gradient(to right, #818cf8, #f472b6); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
-        
-        .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 25px; }
 
         .error-card {
-            background: rgba(239, 68, 68, 0.1);
+            background: #222;
             padding: 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            backdrop-filter: blur(12px);
-            animation: fadeIn 0.4s ease-out forwards;
+            border-radius: 10px;
+            border: 2px solid #ff4444;
         }
 
-        h1.error-title { color: #f87171; margin-top: 0; font-size: 24px; }
-        .error-card p { color: #f8fafc; }
+        h1 {
+            color: #ff4444;
+        }
+
+        .top-blocker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 10;
+            background: transparent;
+        }
     </style>
 </head>
 
 <body>
-    <div class="bg-glow"></div>
-    <div class="bg-glow right"></div>
 
     <div class="container" id="content">
     </div>
@@ -101,7 +79,7 @@
         const contentDiv = document.getElementById('content');
 
         if (!token) {
-            contentDiv.innerHTML = `<div class="error-card"><h1 class="error-title">Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
+            contentDiv.innerHTML = `<div class="error-card"><h1>Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
         } else {
             try {
                 // Decode the data back from Base64
@@ -114,67 +92,27 @@
                 if (currentTime > expirationTime) {
                     contentDiv.innerHTML = `
                         <div class="error-card">
-                            <h1 class="error-title">Link Expired</h1>
+                            <h1>Link Expired</h1>
                             <p>This workout video was valid for 24 hours and has now expired.</p>
                             <p>Please contact your trainer if you need an extension.</p>
                         </div>`;
+                } else {
                     // Link is valid, load the video embed
                     contentDiv.innerHTML = `
-                        <div class="premium-card">
-                            <h2>Your Customized Workout Routine</h2>
-                            <p class="subtitle">This link will expire 24 hours after it was generated.</p>
-                            
-                            <style>
-                                .video-wrapper {
-                                    position: relative;
-                                    padding-bottom: 56.25%; /* Perfect 16:9 ratio */
-                                    height: 0;
-                                    overflow: hidden;
-                                    border-radius: 12px;
-                                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                                    background: #000;
-                                }
-                                
-                                /* Bulletproof shift: 
-                                   We keep the iframe exactly 100% height (perfect 16:9, no black bars from YouTube).
-                                   We shift it UP by exactly 60px.
-                                   This hides the top 60px (Share button/Title).
-                                   The bottom of the iframe sits 60px above the bottom of the wrapper, leaving a clean black bar.
-                                   The native YouTube controls are perfectly visible and functional! */
-                                .video-wrapper iframe {
-                                    position: absolute;
-                                    top: -60px;
-                                    left: 0;
-                                    width: 100%;
-                                    height: 100%;
-                                    border: none;
-                                }
-
-                                /* Invisible shield to block clicking the YouTube watermark on the right side */
-                                .watermark-shield {
-                                    position: absolute;
-                                    bottom: 70px; /* Just above the native control bar */
-                                    right: 0;
-                                    width: 120px;
-                                    height: 50px;
-                                    z-index: 10;
-                                    background: transparent;
-                                }
-                            </style>
-
-                            <div class="video-wrapper">
-                                <div class="watermark-shield"></div>
-                                <iframe 
-                                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
+                        <h2>Your Customized Workout Routine</h2>
+                        <p>This link will expire 24 hours after it was generated.</p>
+                        <div class="video-wrapper">
+                            <div class="top-blocker"></div>
+                            <iframe 
+                                src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
+                                sandbox="allow-scripts allow-same-origin allow-presentation"
+                                allowfullscreen>
+                            </iframe>
                         </div>`;
                 }
 
             } catch (e) {
-                contentDiv.innerHTML = `<div class="error-card"><h1 class="error-title">Error</h1><p>Unable to process this link.</p></div>`;
+                contentDiv.innerHTML = `<div class="error-card"><h1>Error</h1><p>Unable to process this link.</p></div>`;
             }
         }
     </script>
