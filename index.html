@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Link Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; background: #f4f4f9; text-align: center; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; font-size: 16px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        #result { background: #fff; padding: 15px; border: 1px solid #ddd; word-break: break-all; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Generate 24-Hour Client Link</h2>
+    <p>Paste your YouTube link below to create a temporary 24-hour viewing link.</p>
+    
+    <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+    <button onclick="generateLink()">Create Expiring Link</button>
+
+    <div id="result">
+        <strong>Send this link to your client:</strong>
+        <p id="clientLink"></p>
+    </div>
+
+    <script>
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function generateLink() {
+            const urlInput = document.getElementById('ytUrl').value;
+            const videoId = extractVideoId(urlInput);
+
+            if (!videoId) {
+                alert("Please enter a valid YouTube URL");
+                return;
+            }
+
+            // Calculate expiration time (Current time + 24 hours in milliseconds)
+            const expireTime = Date.now() + (24 * 60 * 60 * 1000); 
+
+            // Create a combined string and obscure it using Base64
+            const payload = btoa(JSON.stringify({ id: videoId, exp: expireTime }));
+
+            // Get current page directory to point to view.html
+            const currentDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const finalLink = `${currentDir}/view.html?token=${payload}`;
+
+            document.getElementById('clientLink').innerText = finalLink;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

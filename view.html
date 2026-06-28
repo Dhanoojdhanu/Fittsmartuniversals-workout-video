@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Workout Routine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .error-card {
+            background: #222;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #ff4444;
+        }
+
+        h1 {
+            color: #ff4444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="content">
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const token = getQueryParam('token');
+        const contentDiv = document.getElementById('content');
+
+        if (!token) {
+            contentDiv.innerHTML = `<div class="error-card"><h1>Invalid Link</h1><p>This viewing token is missing or corrupted.</p></div>`;
+        } else {
+            try {
+                // Decode the data back from Base64
+                const data = JSON.parse(atob(token));
+                const videoId = data.id;
+                const expirationTime = data.exp;
+                const currentTime = Date.now();
+
+                // Check if current time has passed the expiration time
+                if (currentTime > expirationTime) {
+                    contentDiv.innerHTML = `
+                        <div class="error-card">
+                            <h1>Link Expired</h1>
+                            <p>This workout video was valid for 24 hours and has now expired.</p>
+                            <p>Please contact your trainer if you need an extension.</p>
+                        </div>`;
+                } else {
+                    // Link is valid, load the video embed
+                    contentDiv.innerHTML = `
+                        <h2>Your Customized Workout Routine</h2>
+                        <p>This link will expire 24 hours after it was generated.</p>
+                        <div class="video-wrapper">
+                            <iframe src="https://www.youtube.com/embed/${videoId}?rel=0" allowfullscreen></iframe>
+                        </div>`;
+                }
+
+            } catch (e) {
+                contentDiv.innerHTML = `<div class="error-card"><h1>Error</h1><p>Unable to process this link.</p></div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
