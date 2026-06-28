@@ -4,24 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Link Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; background: #f4f4f9; text-align: center; }
-        input, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; font-size: 16px; }
-        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
-        #result { background: #fff; padding: 15px; border: 1px solid #ddd; word-break: break-all; margin-top: 20px; display: none; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            margin: 0; 
+            min-height: 100vh;
+            background: #0f172a; 
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        /* Background Glows */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(0,0,0,0) 70%);
+            top: -100px;
+            left: -100px;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .bg-glow.right {
+            top: auto;
+            bottom: -150px;
+            left: auto;
+            right: -100px;
+            background: radial-gradient(circle, rgba(236,72,153,0.2) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        .container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        h2 { margin-top: 0; font-size: 28px; font-weight: 600; background: linear-gradient(to right, #818cf8, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p { color: #94a3b8; font-size: 15px; margin-bottom: 25px; line-height: 1.5; }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(15, 23, 42, 0.6);
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2); }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #6366f1, #d946ef);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6); }
+        button:active { transform: translateY(0); }
+
+        #result {
+            margin-top: 25px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 10px; display: block; }
+        
+        .link-box {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            word-break: break-all;
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px dashed rgba(255,255,255,0.2);
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.1);
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.2); box-shadow: none; }
+        .copy-btn.success { background: #22c55e; color: white; }
+
+        svg { width: 18px; height: 18px; fill: currentColor; }
     </style>
 </head>
 <body>
 
-    <h2>Generate 24-Hour Client Link</h2>
-    <p>Paste your YouTube link below to create a temporary 24-hour viewing link.</p>
-    
-    <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-    <button onclick="generateLink()">Create Expiring Link</button>
+    <div class="bg-glow"></div>
+    <div class="bg-glow right"></div>
 
-    <div id="result">
-        <strong>Send this link to your client:</strong>
-        <p id="clientLink"></p>
+    <div class="container">
+        <h2>Client Link Generator</h2>
+        <p>Paste a YouTube link below to create a secure, temporary viewing link that expires in 24 hours.</p>
+        
+        <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=...">
+        <button onclick="generateLink()">Create Expiring Link</button>
+
+        <div id="result">
+            <span class="result-label">Secure Client Link Generated</span>
+            <div class="link-box" id="clientLink"></div>
+            <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
+                <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                <span id="copyText">Copy Link</span>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -40,18 +165,35 @@
                 return;
             }
 
-            // Calculate expiration time (Current time + 24 hours in milliseconds)
             const expireTime = Date.now() + (24 * 60 * 60 * 1000); 
-
-            // Create a combined string and obscure it using Base64
             const payload = btoa(JSON.stringify({ id: videoId, exp: expireTime }));
 
-            // Get current page directory to point to view.html
             const currentDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             const finalLink = `${currentDir}/view.html?token=${payload}`;
 
             document.getElementById('clientLink').innerText = finalLink;
             document.getElementById('result').style.display = 'block';
+            
+            // Reset copy button
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.className = 'copy-btn';
+            document.getElementById('copyText').innerText = 'Copy Link';
+        }
+
+        function copyToClipboard() {
+            const linkText = document.getElementById('clientLink').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const text = document.getElementById('copyText');
+                btn.classList.add('success');
+                text.innerText = 'Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('success');
+                    text.innerText = 'Copy Link';
+                }, 2000);
+            }).catch(err => {
+                alert("Failed to copy text: " + err);
+            });
         }
     </script>
 </body>
